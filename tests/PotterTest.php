@@ -26,4 +26,21 @@ class PotterTest extends PHPUnit_Framework_TestCase {
         $cart->add([1,2,3,4,5]);
         $this->assertEquals(100 * 5 * 0.75, $cart->checkout());
     }
+
+    public function  testSeveralDiscounts()
+    {
+        $cart = new Cart();
+
+        $cart->add([1,1,2]);
+        $this->assertEquals(100 + (100 * 2 * 0.95), $cart->checkout());
+
+        $cart->add([1,1,2,2]);
+        $this->assertEquals(2 * (100 * 2 * 0.95), $cart->checkout());
+
+        $cart->add([1,1,2,3,3,4]);
+        $this->assertEquals((100 * 2 * 0.95) + (100 * 4 * 0.8), $cart->checkout());
+
+        $cart->add([1,2,2,3,4,5]);
+        $this->assertEquals(100 + (100 * 5 * 0.75), $cart->checkout());
+    }
 }

@@ -2,11 +2,11 @@
 
 class Cart
 {
-    private $sum = 0;
-    private $stack = [];
     private $price = 100;
 
-    private $discount = 0;
+    private $sum = 0;
+    private $stack = [];
+    private $tmps = [];
 
     public function add($ids)
     {
@@ -17,51 +17,67 @@ class Cart
         } else {
             array_push($this->stack, $ids);
         }
-
-        $this->discount();
     }
 
-    private function discount()
+    private function _discount($amount)
     {
-        $amount = count(array_count_values($this->stack));
-
         switch ($amount) {
         case 0:
         case 1:
-            $this->discount = 0;
-            break;
+            return 0;
         case 2:
-            $this->discount = 0.05;
-            break;
+            return 0.05;
         case 3:
-            $this->discount = 0.10;
-            break;
+            return 0.10;
         case 4:
-            $this->discount = 0.20;
-            break;
+            return 0.20;
         case 5:
-            $this->discount = 0.25;
-            break;
+            return 0.25;
         default:
-            break;
+            return 0;
         }
     }
 
-    public function sum()
+    public function subtotal()
     {
-        $this->sum = count($this->stack) * $this->price * (1 - $this->discount);
+        $this->tmps = array_count_values($this->stack);
+        $this->sum = 0;
+
+        while(!empty($this->tmps)) {
+            $this->_subtotal();
+        }
+
         return $this->sum;
+    }
+
+    private function _subtotal()
+    {
+        $amount = count($this->tmps);
+        $discount = $this->_discount($amount);
+        $this->sum += $this->price * $amount * (1 - $discount);
+
+        $this->tmps = array_map(array($this, '_reduce'), $this->tmps);
+        $remove = array(0);
+        $this->tmps = array_diff($this->tmps, $remove);  
+        // $this->tmps = array_filter($this->tmps, function(){return 0;});
+    }
+
+
+    private function _reduce($i)
+    {
+        return $i - 1;
     }
 
     public function clear()
     {
         $this->stack = [];
-        $sum = 0;
+        $this->sum = 0;
     }
 
     public function checkout()
     {
-        $sum = $this->sum();
+        $this->subtotal();
+        $sum = $this->sum;
         $this->clear();
 
         return $sum;
